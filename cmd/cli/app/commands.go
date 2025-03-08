@@ -29,11 +29,29 @@ func (c *cli) Run() {
 }
 
 func (c *cli) processReference(ref string) {
-	valid, err := c.core.Validate(ref)
+	response, err := c.core.Validate(ref)
 	if err != nil {
-		fmt.Fprintf(c.out, "Validation failed for \"%s\":\nError: %s", ref, err)
+		fmt.Fprintf(c.out, "[PARSER ERROR] %s: %v\n", ref, err)
 		return
 	}
 
-	fmt.Fprintf(c.out, "[%t] %s\n", valid, ref)
+	status := "INVALID"
+	if response.IsValid {
+		status = "VALID"
+	}
+	fmt.Fprintf(c.out, "[%s] %s\n", status, ref)
+
+	for _, res := range response.Results {
+		status := "❌"
+		if res.Valid {
+			status = "✅"
+		}
+
+		errMsg := ""
+		if res.Error != nil {
+			errMsg = fmt.Sprintf(" | Error: %v", res.Error)
+		}
+
+		fmt.Fprintf(c.out, "  %s %s%s\n", status, res.APIName, errMsg)
+	}
 }

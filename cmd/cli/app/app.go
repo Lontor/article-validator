@@ -4,10 +4,12 @@ import (
 	"flag"
 	"io"
 	"os"
+
+	"github.com/Lontor/article-validator/internal/core"
 )
 
 type Core interface {
-	Validate(string) (bool, error)
+	Validate(string) (*core.ValidationResponse, error)
 }
 
 type cli struct {

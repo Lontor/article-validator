@@ -36,6 +36,10 @@ func New(endpoint string, maxRetries int) *SemanticScholarClient {
 	return &SemanticScholarClient{endpoint: endpoint, maxRetries: maxRetries}
 }
 
+func (c *SemanticScholarClient) Name() string {
+	return "Semantic Scholar"
+}
+
 func (c *SemanticScholarClient) Validate(ref core.Reference) (bool, error) {
 	params := url.Values{}
 	params.Set("query", fmt.Sprintf(`"%s"`, ref.Title))
