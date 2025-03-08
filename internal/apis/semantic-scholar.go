@@ -32,7 +32,7 @@ type SemanticScholarClient struct {
 	maxRetries int
 }
 
-func New(endpoint string, maxRetries int) *SemanticScholarClient {
+func NewSemanticScholarClient(endpoint string, maxRetries int) *SemanticScholarClient {
 	return &SemanticScholarClient{endpoint: endpoint, maxRetries: maxRetries}
 }
 

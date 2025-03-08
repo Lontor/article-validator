@@ -64,7 +64,7 @@ func (c *Core) Validate(rawReference string) (*ValidationResponse, error) {
 				Error:   err,
 			}
 
-			if !result.IsValid || valid {
+			if valid {
 				mu.Lock()
 				result.IsValid = true
 				mu.Unlock()
