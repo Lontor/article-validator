@@ -65,7 +65,7 @@ func (c *SemanticScholarClient) Validate(ref core.Reference) (bool, error) {
 
 	var resp *http.Response
 
-	for retries := 0; retries < c.maxRetries; retries++ {
+	for retries := 0; retries <= c.maxRetries; retries++ {
 		resp, err = c.client.Get(u.String())
 		if err != nil {
 			time.Sleep(5 * time.Second)
