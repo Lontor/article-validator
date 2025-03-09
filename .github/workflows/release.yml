@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    permissions:
+      contents: write
+      
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            GOOS: linux
+            ext: ""
+          - os: macos-latest
+            GOOS: darwin
+            ext: ""
+          - os: windows-latest
+            GOOS: windows
+            ext: ".exe"
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Install UPX (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y upx
+
+      - name: Build
+        env:
+          GOARCH: amd64
+          GOOS: ${{ matrix.GOOS }}
+        run: |
+          go build -ldflags="-s -w" -o "bin/validator-${{ matrix.GOOS }}-amd64${{ matrix.ext }}" ./cmd/cli
+
+      - name: Compress (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: upx --best --lzma bin/validator-*
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bin/validator-*
+          token: ${{ secrets.GITHUB_TOKEN }}
