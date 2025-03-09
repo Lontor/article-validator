@@ -30,10 +30,21 @@ type matchResponse struct {
 type SemanticScholarClient struct {
 	endpoint   string
 	maxRetries int
+	client     *http.Client
 }
 
-func NewSemanticScholarClient(endpoint string, maxRetries int) *SemanticScholarClient {
-	return &SemanticScholarClient{endpoint: endpoint, maxRetries: maxRetries}
+func NewSemanticScholarClient(endpoint string, maxRetries int, client *http.Client) *SemanticScholarClient {
+	if client == nil {
+		client = &http.Client{
+			Timeout: 10 * time.Second,
+		}
+	}
+
+	return &SemanticScholarClient{
+		endpoint:   endpoint,
+		maxRetries: maxRetries,
+		client:     client,
+	}
 }
 
 func (c *SemanticScholarClient) Name() string {
@@ -55,7 +66,7 @@ func (c *SemanticScholarClient) Validate(ref core.Reference) (bool, error) {
 	var resp *http.Response
 
 	for retries := 0; retries < c.maxRetries; retries++ {
-		resp, err = http.Get(u.String())
+		resp, err = c.client.Get(u.String())
 		if err != nil {
 			time.Sleep(5 * time.Second)
 			continue
