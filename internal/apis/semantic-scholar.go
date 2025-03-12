@@ -3,29 +3,12 @@ package apis
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/Lontor/article-validator/internal/core"
 )
-
-type author struct {
-	AuthorID string `json:"authorId"`
-	Name     string `json:"name"`
-}
-
-type paper struct {
-	PaperID    string   `json:"paperId"`
-	Title      string   `json:"title"`
-	Authors    []author `json:"authors"`
-	MatchScore float64  `json:"matchScore"`
-}
-
-type matchResponse struct {
-	Data []paper `json:"data"`
-}
 
 type SemanticScholarClient struct {
 	endpoint   string
@@ -92,20 +75,27 @@ func (c *SemanticScholarClient) Validate(ref core.Reference) (bool, error) {
 		return false, fmt.Errorf("HTTP error %d: %s", resp.StatusCode, resp.Status)
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	var result struct {
+		Data []struct {
+			PaperID string `json:"paperId"`
+			Title   string `json:"title"`
+			Authors []struct {
+				AuthorID string `json:"authorId"`
+				Name     string `json:"name"`
+			} `json:"authors"`
+			MatchScore float64 `json:"matchScore"`
+		} `json:"data"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, err
+	}
 	defer resp.Body.Close()
-	if err != nil {
-		return false, err
-	}
 
-	var data matchResponse
-	if err := json.Unmarshal(body, &data); err != nil {
-		return false, err
-	}
-
-	if len(data.Data) == 0 {
+	if len(result.Data) == 0 {
 		return false, nil
 	}
 
 	return true, nil
+
 }
